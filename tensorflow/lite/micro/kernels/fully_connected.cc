@@ -95,15 +95,50 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const float* bias_data =
           nullptr != bias ? tflite::micro::GetTensorData<float>(bias) : nullptr;
 
-      tflite::reference_ops::FullyConnected(
-          FullyConnectedParamsFloat(params->activation),
-          tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<float>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<float>(filter),
-          tflite::micro::GetTensorShape(bias), bias_data,
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<float>(output));
+      switch (filter->type) {
+        case kTfLiteInt8: {
+          tflite::reference_ops::FullyConnected(
+              FullyConnectedParamsFloat(params->activation),
+              tflite::micro::GetTensorShape(input),
+              tflite::micro::GetTensorData<float>(input),
+              tflite::micro::GetTensorShape(filter),
+              tflite::micro::GetTensorData<int8_t>(filter),
+              tflite::micro::GetTensorShape(bias), bias_data,
+              tflite::micro::GetTensorShape(output),
+              tflite::micro::GetTensorData<float>(output));
+          break;
+        }
+        case kTfLiteInt16: {
+          tflite::reference_ops::FullyConnected(
+              FullyConnectedParamsFloat(params->activation),
+              tflite::micro::GetTensorShape(input),
+              tflite::micro::GetTensorData<float>(input),
+              tflite::micro::GetTensorShape(filter),
+              tflite::micro::GetTensorData<int16_t>(filter),
+              tflite::micro::GetTensorShape(bias), bias_data,
+              tflite::micro::GetTensorShape(output),
+              tflite::micro::GetTensorData<float>(output));
+          break;
+        }
+        case kTfLiteFloat32: {
+          tflite::reference_ops::FullyConnected(
+              FullyConnectedParamsFloat(params->activation),
+              tflite::micro::GetTensorShape(input),
+              tflite::micro::GetTensorData<float>(input),
+              tflite::micro::GetTensorShape(filter),
+              tflite::micro::GetTensorData<float>(filter),
+              tflite::micro::GetTensorShape(bias), bias_data,
+              tflite::micro::GetTensorShape(output),
+              tflite::micro::GetTensorData<float>(output));
+          break;
+        }
+        default: {
+          MicroPrintf("Weight Type %s (%d) not supported.",
+                      TfLiteTypeGetName(filter->type),
+                      filter->type);
+          return kTfLiteError;
+        }
+      }
       break;
     }
 

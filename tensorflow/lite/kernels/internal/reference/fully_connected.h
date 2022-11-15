@@ -26,10 +26,11 @@ limitations under the License.
 namespace tflite {
 namespace reference_ops {
 
+template <typename WeightT>
 inline void FullyConnected(
     const FullyConnectedParams& params, const RuntimeShape& input_shape,
     const float* input_data, const RuntimeShape& weights_shape,
-    const float* weights_data, const RuntimeShape& bias_shape,
+    const WeightT* weights_data, const RuntimeShape& bias_shape,
     const float* bias_data, const RuntimeShape& output_shape,
     float* output_data) {
   const float output_activation_min = params.float_activation_min;

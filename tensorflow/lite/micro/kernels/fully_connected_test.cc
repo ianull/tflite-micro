@@ -42,6 +42,16 @@ const float simple_weights_data[] = {
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 1
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 2
 };
+const int8_t simple_weights_data_int8[] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 0
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 1
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 2
+};
+const int16_t simple_weights_data_int16[] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 0
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 1
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  // u = 2
+};
 int simple_bias_dims[] = {1, 3};
 const float simple_bias_data[] = {1, 2, 3};
 const float simple_golden[] = {
@@ -282,9 +292,10 @@ TfLiteStatus ValidateFullyConnectedGoldens(
 }
 
 #if !defined(XTENSA)  // Needed to avoid build error from unused functions.
+template <typename WeightT>
 TfLiteStatus TestFullyConnectedFloat(
     int* input_dims_data, const float* input_data, int* weights_dims_data,
-    const float* weights_data, int* bias_dims_data, const float* bias_data,
+    const WeightT* weights_data, int* bias_dims_data, const float* bias_data,
     const float* golden, int* output_dims_data,
     TfLiteFusedActivation activation, float* output_data) {
   TfLiteIntArray* input_dims = IntArrayFromInts(input_dims_data);
@@ -386,6 +397,34 @@ TF_LITE_MICRO_TEST(SimpleTest) {
           tflite::testing::simple_input_data,
           tflite::testing::simple_weights_dims,
           tflite::testing::simple_weights_data,
+          tflite::testing::simple_bias_dims, tflite::testing::simple_bias_data,
+          tflite::testing::simple_golden, tflite::testing::simple_output_dims,
+          kTfLiteActNone, output_data),
+      kTfLiteOk);
+}
+
+TF_LITE_MICRO_TEST(SimpleTestInt8Weights) {
+  float output_data[tflite::testing::simple_output_size];
+  TF_LITE_MICRO_EXPECT_EQ(
+      tflite::testing::TestFullyConnectedFloat(
+          tflite::testing::simple_input_dims,
+          tflite::testing::simple_input_data,
+          tflite::testing::simple_weights_dims,
+          tflite::testing::simple_weights_data_int8,
+          tflite::testing::simple_bias_dims, tflite::testing::simple_bias_data,
+          tflite::testing::simple_golden, tflite::testing::simple_output_dims,
+          kTfLiteActNone, output_data),
+      kTfLiteOk);
+}
+
+TF_LITE_MICRO_TEST(SimpleTestInt16Weights) {
+  float output_data[tflite::testing::simple_output_size];
+  TF_LITE_MICRO_EXPECT_EQ(
+      tflite::testing::TestFullyConnectedFloat(
+          tflite::testing::simple_input_dims,
+          tflite::testing::simple_input_data,
+          tflite::testing::simple_weights_dims,
+          tflite::testing::simple_weights_data_int16,
           tflite::testing::simple_bias_dims, tflite::testing::simple_bias_data,
           tflite::testing::simple_golden, tflite::testing::simple_output_dims,
           kTfLiteActNone, output_data),
